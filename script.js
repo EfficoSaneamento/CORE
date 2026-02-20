@@ -1,66 +1,72 @@
-const API = 'https://script.google.com/macros/s/AKfycbzF7Tv37LlMN-na6J_1f-rq90axU-tVnFQCG9qDZmh0I7qdCYmGgTqQlBLpoahpin9P/exec'
+const URL_API = 'https://script.google.com/macros/s/AKfycbycJKciXRHOzWzkmXEj71A8pf5U-qGU-RiEKf2JiJTzAt8161G8eRVukHTeItT6bOFr/exec';
 
-async function carregarSolicitacoes() {
-  const res = await fetch(`${API}?acao=listar`)
-  const dados = await res.json()
+document.addEventListener('DOMContentLoaded', () => {
+  carregarSolicitacoes();
+});
 
-  const tbody = document.getElementById('tabelaSolicitacoes')
-  tbody.innerHTML = ''
-
-  dados.forEach(s => {
-    const cor =
-      s.status === 'Concluído' ? 'bg-green-200' :
-      s.status === 'Em andamento' ? 'bg-yellow-200' :
-      'bg-red-200'
-
-    const tr = document.createElement('tr')
-    tr.innerHTML = `
-      <td>${s.id}</td>
-      <td>${s.data}</td>
-      <td>${s.item}</td>
-      <td>${s.quantidade}</td>
-      <td>${s.comprador}</td>
-      <td><span class="px-2 py-1 rounded ${cor}">${s.status}</span></td>
-      <td>
-        <button onclick="concluir('${s.id}')"
-                class="text-green-600 font-bold">
-          Concluir
-        </button>
-      </td>
-    `
-    tbody.appendChild(tr)
-  })
+function carregarSolicitacoes() {
+  fetch(`${URL_API}?aba=DB_SOLICITACOES`)
+    .then(res => res.json())
+    .then(dados => renderizarTabela(dados))
+    .catch(err => {
+      console.error(err);
+      document.getElementById('corpoTabela').innerHTML = `
+        <tr>
+          <td colspan="9" class="p-4 text-center text-red-500">
+            Erro ao carregar dados
+          </td>
+        </tr>
+      `;
+    });
 }
 
-async function concluir(id) {
-  await fetch(`${API}?acao=concluir&id=${id}`)
-  carregarSolicitacoes()
-}
+function renderizarTabela(dados) {
+  const corpo = document.getElementById('corpoTabela');
+  corpo.innerHTML = '';
 
-async function salvarAvaliacao(dados) {
-  const params = new URLSearchParams(dados).toString()
-  await fetch(`${API}?acao=avaliar&${params}`)
-}
-
-async function loginDashboard() {
-  const usuario = 'PEDRO'
-  const senha = document.getElementById('senhaDashboard').value
-
-  const res = await fetch(`${API}?acao=login&usuario=${usuario}&senha=${senha}`)
-  const r = await res.json()
-
-  if (r.acesso) {
-    carregarDashboard()
-  } else {
-    alert('Senha inválida')
+  if (!dados || dados.length === 0) {
+    corpo.innerHTML = `
+      <tr>
+        <td colspan="9" class="p-4 text-center text-gray-400">
+          Nenhuma solicitação ativa
+        </td>
+      </tr>
+    `;
+    return;
   }
+
+  const colunas = [
+    'IDENTIFICADOR',
+    'Data da Solicitação',
+    'Data Limite',
+    'Centro de Custo',
+    'Item',
+    'Observacao',
+    'Quantidade',
+    'Solicitante',
+    'STATUS'
+  ];
+
+  dados.forEach(linha => {
+    corpo.innerHTML += `
+      <tr class="border-t hover:bg-slate-50">
+        ${colunas.map(col => {
+          if (col === 'STATUS') {
+            return `<td class="p-3">${farolStatus(linha[col])}</td>`;
+          }
+          return `<td class="p-3">${linha[col] ?? ''}</td>`;
+        }).join('')}
+      </tr>
+    `;
+  });
 }
 
-async function carregarDashboard() {
-  const res = await fetch(`${API}?acao=dashboard`)
-  const d = await res.json()
-
-  document.getElementById('dashPendentes').innerText = d.pendente
-  document.getElementById('dashAndamento').innerText = d.andamento
-  document.getElementById('dashConcluidas').innerText = d.concluido
+function farolStatus(status) {
+  if (status === 'Concluído') {
+    return `<span class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">🟢 Concluído</span>`;
+  }
+  if (status === 'Em andamento') {
+    return `<span class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700">🟡 Em andamento</span>`;
+  }
+  return `<span class="px-2 py-1 text-xs rounded bg-red-100 text-red-700">🔴 Pendente</span>`;
 }
