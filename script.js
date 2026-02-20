@@ -1,4 +1,4 @@
-const URL_API = 'SUA_URL_DO_APPS_SCRIPT_AQUI';
+const URL_API = 'https://script.google.com/macros/s/AKfycbxYeYJCmJRDyn0wI0or4CjupMEqInFwJF8QgLG0_cRe1rGm2LXpQ1d8CcaiGZd6iKm9VQ/exec';
 
 let abaAtiva = 'banco';
 
