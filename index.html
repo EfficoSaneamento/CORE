@@ -1,62 +1,52 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
+<title>CORE | Solicitação de Compras</title>
 
-    <title>CORE | Compras</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- FontAwesome -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
-
 <body class="bg-slate-100 flex h-screen">
 
 <!-- SIDEBAR -->
 <aside class="w-64 bg-slate-900 text-white flex flex-col">
-
-    <!-- LOGO -->
     <div class="p-4 border-b border-white/10 flex items-center gap-3">
-        <img src="logo.png" alt="Logo CORE" class="w-10 h-10 object-contain">
-        <span class="text-lg font-bold tracking-wide">CORE</span>
+        <i class="fas fa-cart-plus text-green-400 text-xl"></i>
+        <span class="font-bold text-lg">CORE</span>
     </div>
 
-    <nav class="mt-4 flex-1 px-3 space-y-2">
-
-        <button onclick="mudarAba('banco')" id="btn-banco"
-            class="btn-aba bg-white/10">
-            <i class="fas fa-search-dollar w-5"></i>
-            Banco de Preços
-        </button>
-
-        <button onclick="mudarAba('solicitacao')" id="btn-solicitacao"
-            class="btn-aba">
-            <i class="fas fa-cart-plus w-5"></i>
+    <nav class="mt-4 px-3">
+        <div class="bg-white/10 p-3 rounded-lg flex items-center gap-3">
+            <i class="fas fa-file-invoice"></i>
             Solicitação de Compras
-        </button>
-
-        <button onclick="mudarAba('avaliacao')" id="btn-avaliacao"
-            class="btn-aba">
-            <i class="fas fa-star-half-alt w-5"></i>
-            Avaliação do Fornecedor
-        </button>
-
+        </div>
     </nav>
 </aside>
 
 <!-- CONTEÚDO -->
 <main class="flex-1 p-6 overflow-auto">
 
-    <h2 id="tituloPagina" class="text-2xl font-bold mb-4">
-        BANCO DE PREÇOS
+    <h2 class="text-2xl font-bold mb-4">
+        SOLICITAÇÃO DE COMPRAS
     </h2>
 
     <div class="bg-white rounded-lg shadow overflow-x-auto">
         <table class="w-full text-sm">
-            <thead id="cabecalhoTabela" class="bg-slate-200"></thead>
+            <thead class="bg-slate-200">
+                <tr>
+                    <th class="p-3">Identificador</th>
+                    <th class="p-3">Data da Solicitação</th>
+                    <th class="p-3">Data Limite</th>
+                    <th class="p-3">Centro de Custo</th>
+                    <th class="p-3">Item</th>
+                    <th class="p-3">Observação</th>
+                    <th class="p-3">Quantidade</th>
+                    <th class="p-3">Solicitante</th>
+                </tr>
+            </thead>
             <tbody id="corpoTabela"></tbody>
         </table>
     </div>
@@ -64,22 +54,5 @@
 </main>
 
 <script src="script.js"></script>
-
-<style>
-    .btn-aba {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px;
-        border-radius: 8px;
-        text-align: left;
-        transition: 0.2s;
-    }
-    .btn-aba:hover {
-        background: rgba(255,255,255,0.1);
-    }
-</style>
-
 </body>
 </html>
