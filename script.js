@@ -1,58 +1,58 @@
-// 🔴 COLE SUA URL DO APPS SCRIPT AQUI
 const URL_API = 'https://script.google.com/macros/s/AKfycbxzSC8wajsJXFWRotOE0VB3lI25Ng8pn6EmgVg3QfQDmZpegKPkM0Bj3e3yct4Y2Wbd/exec';
 let dadosOriginais = [];
 
+/* ---------- INIT ---------- */
 fetch(`${URL_API}?aba=DB_SOLICITACOES`)
   .then(r => r.json())
   .then(dados => {
     dadosOriginais = dados;
-    popularCompradores(dados);
-    renderizar(dados);
+    renderizarTabela(dados);
   });
 
-function formatarData(d) {
-  if (!d) return '-';
-  const dt = new Date(d);
-  return dt.toLocaleDateString('pt-BR');
+/* ---------- UTIL ---------- */
+function formatarData(data) {
+  if (!data) return '-';
+  const d = new Date(data);
+  return d.toLocaleDateString('pt-BR');
 }
 
-function agruparPorId(dados) {
+function agruparPorIdentificador(dados) {
   return dados.reduce((acc, item) => {
-    acc[item.IDENTIFICADOR] = acc[item.IDENTIFICADOR] || [];
-    acc[item.IDENTIFICADOR].push(item);
+    const id = item["Identificador"];
+    if (!acc[id]) acc[id] = [];
+    acc[id].push(item);
     return acc;
   }, {});
 }
 
-function renderizar(dados) {
+/* ---------- RENDER ---------- */
+function renderizarTabela(dados) {
   const corpo = document.getElementById('corpoTabela');
   corpo.innerHTML = '';
-  const grupos = agruparPorId(dados);
+
+  const grupos = agruparPorIdentificador(dados);
 
   Object.keys(grupos).forEach(id => {
     const itens = grupos[id];
-    const p = itens[0];
+    const base = itens[0];
 
+    // LINHA PAI
     corpo.innerHTML += `
-      <tr class="linha-pai" onclick="toggle('${id}', this)">
-        <td class="p-3"><span class="icon">➕</span>${id}</td>
-        <td>${formatarData(p.DATA)}</td>
-        <td>${formatarData(p.DATA_LIMITE)}</td>
-        <td>-</td>
-        <td>-</td>
-        <td>-</td>
-        <td>-</td>
-        <td>${p.SOLICITANTE}</td>
-        <td>${badge(p.STATUS)}</td>
+      <tr class="bg-slate-100 cursor-pointer" onclick="toggleGrupo('${id}', this)">
+        <td class="p-2 font-bold">
+          <span class="toggle-icon">➕</span> ${id}
+        </td>
+        <td>${itens.length} itens</td>
+        <td>${formatarData(base["Data da Solicitação"])}</td>
+        <td>${base["Status"]}</td>
         <td>
           <select onchange="definirComprador('${id}', this.value)">
-            <option>${p.COMPRADOR || 'Selecionar'}</option>
+            <option>${base["Comprador"] || 'Selecionar'}</option>
             <option>João</option>
             <option>Maria</option>
             <option>Carlos</option>
           </select>
         </td>
-        <td>${formatarData(p.DATA_FINALIZACAO)}</td>
         <td>
           <button class="bg-green-600 text-white px-2 py-1 rounded text-xs"
             onclick="event.stopPropagation(); concluir('${id}')">
@@ -62,37 +62,36 @@ function renderizar(dados) {
       </tr>
     `;
 
-    itens.forEach(i => {
+    // LINHAS FILHAS (ITENS)
+    itens.forEach(item => {
       corpo.innerHTML += `
-        <tr class="linha-filho grupo-${id}">
-          <td></td><td></td><td></td>
-          <td>${i.CENTRO_CUSTO}</td>
-          <td>${i.ITEM}</td>
-          <td>${i.OBSERVACAO || '-'}</td>
-          <td>${i.QTD}</td>
-          <td></td><td></td><td></td><td></td><td></td>
+        <tr class="hidden grupo-${id} bg-white border-t">
+          <td></td>
+          <td>${item["Item"]}</td>
+          <td>${formatarData(item["Data Limite"])}</td>
+          <td>${item["Centro de Custo"]}</td>
+          <td>${item["Observação"] || '-'}</td>
+          <td>${item["Quantidade"]}</td>
         </tr>
       `;
     });
   });
 }
 
-function toggle(id, row) {
+/* ---------- EXPAND ---------- */
+function toggleGrupo(id, linha) {
   const filhos = document.querySelectorAll(`.grupo-${id}`);
-  const icon = row.querySelector('.icon');
+  const icon = linha.querySelector('.toggle-icon');
   const aberto = icon.textContent === '➖';
 
-  filhos.forEach(f => f.classList.toggle('show'));
+  filhos.forEach(f => f.classList.toggle('hidden'));
   icon.textContent = aberto ? '➕' : '➖';
 }
 
-function badge(s) {
-  return s === 'Em andamento'
-    ? `<span class="bg-yellow-200 px-2 rounded text-xs">🟡 Em andamento</span>`
-    : `<span class="bg-red-200 px-2 rounded text-xs">🔴 Pendente</span>`;
-}
-
+/* ---------- AÇÕES ---------- */
 function concluir(id) {
+  if (!confirm('Concluir solicitação?')) return;
+
   fetch(URL_API, {
     method: 'POST',
     body: JSON.stringify({ action: 'CONCLUIR', id })
@@ -104,20 +103,4 @@ function definirComprador(id, comprador) {
     method: 'POST',
     body: JSON.stringify({ action: 'COMPRADOR', id, comprador })
   });
-}
-
-function popularCompradores(dados) {
-  const select = document.getElementById('filtroComprador');
-  [...new Set(dados.map(d => d.COMPRADOR).filter(Boolean))]
-    .forEach(c => select.innerHTML += `<option>${c}</option>`);
-}
-
-function aplicarFiltros() {
-  const c = filtroComprador.value;
-  const s = filtroStatus.value;
-
-  renderizar(dadosOriginais.filter(d =>
-    (!c || d.COMPRADOR === c) &&
-    (!s || d.STATUS === s)
-  ));
 }
