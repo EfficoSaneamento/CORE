@@ -1,36 +1,11 @@
-// 🔴 COLE SUA URL DO APPS SCRIPT AQUI
-const URL_API = 'https://script.google.com/macros/s/AKfycbycJKciXRHOzWzkmXEj71A8pf5U-qGU-RiEKf2JiJTzAt8161G8eRVukHTeItT6bOFr/exec';
+const URL_API = 'SUA_URL_DO_APPS_SCRIPT';
 
-let abaAtiva = 'solicitacoes';
-let dadosCache = [];
+const COMPRADORES = ['Flávio', 'Patrícia', 'Leonardo', 'Pedro'];
 
-/* ---------- NAVEGAÇÃO ---------- */
-function mudarAba(aba) {
-  abaAtiva = aba;
-
-  document.getElementById('tituloPagina').innerText =
-    aba === 'solicitacoes' ? 'SOLICITAÇÕES' :
-    aba === 'avaliacao' ? 'AVALIAÇÃO DO FORNECEDOR' :
-    'DASHBOARD';
-
-  document.querySelectorAll('.btn-aba').forEach(b =>
-    b.classList.remove('bg-white/10')
-  );
-  document.getElementById(`btn-${aba}`).classList.add('bg-white/10');
-
-  if (aba === 'solicitacoes') carregarSolicitacoes();
-  if (aba === 'avaliacao') carregarAvaliacao();
-  if (aba === 'dashboard') carregarDashboard();
-}
-
-/* ---------- SOLICITAÇÕES ---------- */
 function carregarSolicitacoes() {
-  fetch(`${URL_API}?aba=DB_SOLICITACOES`)
+  fetch(URL_API)
     .then(r => r.json())
-    .then(dados => {
-      dadosCache = dados;
-      renderizarSolicitacoes(dados);
-    });
+    .then(renderizarSolicitacoes);
 }
 
 function renderizarSolicitacoes(dados) {
@@ -40,93 +15,77 @@ function renderizarSolicitacoes(dados) {
   if (!dados.length) {
     corpo.innerHTML = `
       <tr>
-        <td colspan="7" class="p-4 text-center text-gray-400">
+        <td colspan="12" class="p-4 text-center text-gray-400">
           Nenhuma solicitação ativa
         </td>
-      </tr>
-    `;
+      </tr>`;
     return;
   }
 
-  let html = '';
   dados.forEach(d => {
-    html += `
+    corpo.innerHTML += `
       <tr class="border-t hover:bg-slate-50">
-        <td class="p-3">${d.IDENTIFICADOR}</td>
-        <td class="p-3">${d["DATA DA SOLICITACAO"]}</td>
-        <td class="p-3">${d["DATA LIMITE"]}</td>
-        <td class="p-3">${d["CENTRO DE CUSTO"]}</td>
-        <td class="p-3">${d.ITEM}</td>
-        <td class="p-3">${d.OBSERVACAO || '-'}</td>
-        <td class="p-3">${d.QUANTIDADE}</td>
-        <td class="p-3">${d.SOLICITANTE}</td>
-        <td class="p-3">${badgeStatus(d.STATUS)}</td>
-        <td class="p-3">${d.COMPRADOR}</td>
-        <td class="p-3">${d["DATA FINALIZACAO"] || '-'}</td>
-        <td class="p-3">
+        <td class="p-2">${d.IDENTIFICADOR}</td>
+        <td class="p-2">${d.DATA_DA_SOLICITACAO}</td>
+        <td class="p-2">${d.DATA_LIMITE}</td>
+        <td class="p-2">${d.CENTRO_DE_CUSTO}</td>
+        <td class="p-2">${d.ITEM}</td>
+        <td class="p-2">${d.OBSERVACAO || '-'}</td>
+        <td class="p-2">${d.QUANTIDADE}</td>
+        <td class="p-2">${d.SOLICITANTE}</td>
+        <td class="p-2">${farol(d.STATUS)}</td>
+        <td class="p-2">
+          ${selectComprador(d)}
+        </td>
+        <td class="p-2">
           <button onclick="concluir('${d.IDENTIFICADOR}')"
-            class="text-xs bg-green-600 text-white px-3 py-1 rounded">
+            class="bg-green-600 text-white px-3 py-1 rounded text-xs">
             Concluir
           </button>
         </td>
       </tr>
     `;
   });
-  corpo.innerHTML = html;
 }
 
-/* ---------- STATUS ---------- */
-function badgeStatus(status) {
-  if (status === 'Em andamento')
-    return '<span class="text-yellow-700 bg-yellow-100 px-2 py-1 rounded text-xs">🟡 Em andamento</span>';
-  return '<span class="text-red-700 bg-red-100 px-2 py-1 rounded text-xs">🔴 Pendente</span>';
+/* ---------- FAROL ---------- */
+function farol(status) {
+  if (status === 'EM ANDAMENTO')
+    return '🟡 Em andamento';
+  if (status === 'CONCLUÍDO')
+    return '🟢 Concluído';
+  return '🔴 Pendente';
+}
+
+/* ---------- SELECT COMPRADOR ---------- */
+function selectComprador(d) {
+  return `
+    <select onchange="salvarComprador('${d.IDENTIFICADOR}', this.value)"
+      class="border rounded px-2 py-1 text-sm">
+      <option value="">Selecionar</option>
+      ${COMPRADORES.map(c =>
+        `<option ${d.COMPRADOR === c ? 'selected' : ''}>${c}</option>`
+      ).join('')}
+    </select>
+  `;
+}
+
+function salvarComprador(id, comprador) {
+  fetch(URL_API, {
+    method: 'POST',
+    body: JSON.stringify({ id, comprador })
+  });
 }
 
 /* ---------- CONCLUIR ---------- */
 function concluir(id) {
-  if (!confirm('Concluir esta solicitação?')) return;
+  if (!confirm('Deseja concluir esta solicitação?')) return;
 
   fetch(URL_API, {
     method: 'POST',
-    body: JSON.stringify({
-      action: 'CONCLUIR',
-      id: id
-    })
-  }).then(r => r.json())
-    .then(() => carregarSolicitacoes())
-    .catch(e => console.error('Erro ao concluir:', e));
+    body: JSON.stringify({ action: 'CONCLUIR', id })
+  })
+  .then(() => carregarSolicitacoes());
 }
 
-/* ---------- AVALIAÇÃO ---------- */
-function carregarAvaliacao() {
-  document.getElementById('corpoTabela').innerHTML = `
-    <tr>
-      <td colspan="7" class="p-4 text-center text-gray-400">
-        Avaliação será exibida após conclusão
-      </td>
-    </tr>
-  `;
-}
-
-/* ---------- DASHBOARD ---------- */
-function carregarDashboard() {
-  const senha = prompt('Digite a senha do dashboard:');
-  if (senha !== 'Effico*2025') {
-    alert('Acesso negado');
-    mudarAba('solicitacoes');
-    return;
-  }
-
-  document.getElementById('corpoTabela').innerHTML = `
-    <tr>
-      <td colspan="7" class="p-4 text-center font-bold">
-        Dashboard em construção 🚀
-      </td>
-    </tr>
-  `;
-}
-
-/* ---------- INICIAL ---------- */
-document.addEventListener('DOMContentLoaded', () => {
-  carregarSolicitacoes();
-});
+document.addEventListener('DOMContentLoaded', carregarSolicitacoes);
