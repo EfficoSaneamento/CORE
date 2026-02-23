@@ -52,10 +52,12 @@ function renderizarSolicitacoes(dados) {
     corpo.innerHTML += `
       <tr class="border-t hover:bg-slate-50">
         <td class="p-3">${d.IDENTIFICADOR}</td>
-        <td class="p-3">${d['Data da Solicitação']}</td>
-        <td class="p-3">${d.Item}</td>
-        <td class="p-3">${d.Quantidade}</td>
-        <td class="p-3">${d.Solicitante}</td>
+        <td class="p-3">${d.DATA_DA_SOLICITAÇÃO}</td>
+        <td class="p-3">${d.CENTRO_DE_CUSTO}</td>
+        <td class="p-3">${d.ITEM}</td>
+        <td class="p-3">${d.OBSERVAÇÃO}</td>
+        <td class="p-3">${d.QUANTIDADE}</td>
+        <td class="p-3">${d.SOLICITANTE}</td>
         <td class="p-3">${badgeStatus(d.STATUS)}</td>
         <td class="p-3">
           <button onclick="concluir('${d.IDENTIFICADOR}')"
