@@ -1,4 +1,4 @@
-
+// 🔴 COLE SUA URL DO APPS SCRIPT AQUI
 const URL_API = 'https://script.google.com/macros/s/AKfycbycJKciXRHOzWzkmXEj71A8pf5U-qGU-RiEKf2JiJTzAt8161G8eRVukHTeItT6bOFr/exec';
 
 let abaAtiva = 'solicitacoes';
@@ -48,16 +48,17 @@ function renderizarSolicitacoes(dados) {
     return;
   }
 
+  let html = '';
   dados.forEach(d => {
-    corpo.innerHTML += `
+    html += `
       <tr class="border-t hover:bg-slate-50">
         <td class="p-3">${d.IDENTIFICADOR}</td>
-        <td class="p-3">${d.DATA_DA_SOLICITAÇÃO}</td>
+        <td class="p-3">${d.DATA_DA_SOLICITACAO}</td>
         <td class="p-3">${d.CENTRO_DE_CUSTO}</td>
         <td class="p-3">${d.ITEM}</td>
         <td class="p-3">${d.OBSERVAÇÃO}</td>
         <td class="p-3">${d.QUANTIDADE}</td>
-        <td class="p-3">${d.SOLICITANTE}</td>
+        <td class="p-3">${d.UNIDADE}</td>
         <td class="p-3">${badgeStatus(d.STATUS)}</td>
         <td class="p-3">
           <button onclick="concluir('${d.IDENTIFICADOR}')"
@@ -68,6 +69,7 @@ function renderizarSolicitacoes(dados) {
       </tr>
     `;
   });
+  corpo.innerHTML = html;
 }
 
 /* ---------- STATUS ---------- */
@@ -87,7 +89,9 @@ function concluir(id) {
       action: 'CONCLUIR',
       id: id
     })
-  }).then(() => carregarSolicitacoes());
+  }).then(r => r.json())
+    .then(() => carregarSolicitacoes())
+    .catch(e => console.error('Erro ao concluir:', e));
 }
 
 /* ---------- AVALIAÇÃO ---------- */
