@@ -1,4 +1,4 @@
-const URL_API = 'SUA_URL_DO_APPS_SCRIPT';
+const URL_API = 'https://script.google.com/macros/s/AKfycbxzSC8wajsJXFWRotOE0VB3lI25Ng8pn6EmgVg3QfQDmZpegKPkM0Bj3e3yct4Y2Wbd/exec';
 
 const COMPRADORES = ['Flávio', 'Patrícia', 'Leonardo', 'Pedro'];
 
