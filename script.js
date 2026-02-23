@@ -77,6 +77,9 @@ function renderizarAgrupado(dados) {
           <td colspan="2">${i.ITEM}</td>
           <td>${i.QUANTIDADE}</td>
           <td colspan="2">${i.OBSERVAÇÃO || '-'}</td>
+          <td class="text-sm text-gray-500">${formatarData(i['DATA DE ENTREGA'])}</td>
+          <td>${badgeStatus(i.STATUS_CALCULADO)}</td>
+          <td colspan="2" class="text-sm text-gray-500">Solicitante: ${i.SOLICITANTE}</td>
         </tr>
       `;
     });
