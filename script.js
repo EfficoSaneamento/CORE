@@ -54,12 +54,15 @@ function renderizarSolicitacoes(dados) {
       <tr class="border-t hover:bg-slate-50">
         <td class="p-3">${d.IDENTIFICADOR}</td>
         <td class="p-3">${d.DATA_DA_SOLICITACAO}</td>
+        <td class="p-3">${d.DATA_LIMITE}</td>
         <td class="p-3">${d.CENTRO_DE_CUSTO}</td>
         <td class="p-3">${d.ITEM}</td>
         <td class="p-3">${d.OBSERVAÇÃO}</td>
         <td class="p-3">${d.QUANTIDADE}</td>
-        <td class="p-3">${d.UNIDADE}</td>
+        <td class="p-3">${d.SOLICITANTE}</td>
         <td class="p-3">${badgeStatus(d.STATUS)}</td>
+        <td class="p-3">${d.COMPRADOR}</td>
+        <td class="p-3">${d.DATA_FINALIZACAO}</td>
         <td class="p-3">
           <button onclick="concluir('${d.IDENTIFICADOR}')"
             class="text-xs bg-green-600 text-white px-3 py-1 rounded">
