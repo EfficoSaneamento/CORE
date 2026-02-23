@@ -57,7 +57,7 @@ function renderizarSolicitacoes(dados) {
         <td class="p-3">${d.DATA_LIMITE}</td>
         <td class="p-3">${d.CENTRO_DE_CUSTO}</td>
         <td class="p-3">${d.ITEM}</td>
-        <td class="p-3">${d.OBSERVAÇÃO}</td>
+        <td class="p-3">${d.OBSERVACAO || '-'}</td>
         <td class="p-3">${d.QUANTIDADE}</td>
         <td class="p-3">${d.SOLICITANTE}</td>
         <td class="p-3">${badgeStatus(d.STATUS)}</td>
