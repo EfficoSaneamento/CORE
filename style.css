@@ -1,0 +1,22 @@
+.linha-pai {
+  background: #f1f5f9;
+  cursor: pointer;
+}
+
+.linha-pai:hover {
+  background: #e2e8f0;
+}
+
+.linha-filho {
+  display: none;
+  background: #fafafa;
+}
+
+.linha-filho.show {
+  display: table-row;
+}
+
+.icon {
+  font-weight: bold;
+  margin-right: 6px;
+}
