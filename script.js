@@ -4,12 +4,12 @@ const URL_API = 'https://script.google.com/macros/s/AKfycbxzSC8wajsJXFWRotOE0VB3
 let abaAtiva = 'solicitacoes';
 
 /* ---------- UTIL ---------- */
-function formatarData(data) {
-  if (!data) return '-';
-  return `- ${data}`;
+function formatarData(d) {
+  if (!d) return '-';
+  return `- ${d}`;
 }
 
-function farol(status) {
+function badgeStatus(status) {
   if (status === 'Concluído')
     return '<span class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">🟢 Concluído</span>';
   if (status === 'Em andamento')
@@ -26,16 +26,18 @@ function mudarAba(aba) {
     aba === 'avaliacao' ? 'AVALIAÇÃO DO FORNECEDOR' :
     'DASHBOARD';
 
-  document.querySelectorAll('.btn-aba').forEach(b =>
-    b.classList.remove('bg-white/10')
-  );
+  document.querySelectorAll('.btn-aba')
+    .forEach(b => b.classList.remove('bg-white/10'));
   document.getElementById(`btn-${aba}`).classList.add('bg-white/10');
 
   if (aba === 'solicitacoes') carregarSolicitacoes();
+  else document.getElementById('corpoTabela').innerHTML = `
+    <tr><td colspan="6" class="p-4 text-center">Em construção 🚧</td></tr>
+  `;
 }
 
-/* ---------- AGRUPAMENTO ---------- */
-function agruparPorIdentificador(dados) {
+/* ---------- AGRUPAR ---------- */
+function agruparPorId(dados) {
   const grupos = {};
   dados.forEach(d => {
     if (!grupos[d.IDENTIFICADOR]) grupos[d.IDENTIFICADOR] = [];
@@ -48,41 +50,49 @@ function agruparPorIdentificador(dados) {
 function carregarSolicitacoes() {
   fetch(`${URL_API}?aba=DB_SOLICITACOES`)
     .then(r => r.json())
-    .then(dados => renderizarSolicitacoes(dados));
+    .then(dados => renderizar(dados));
 }
 
 /* ---------- RENDER ---------- */
-function renderizarSolicitacoes(dados) {
+function renderizar(dados) {
   const corpo = document.getElementById('corpoTabela');
   corpo.innerHTML = '';
 
   if (!dados.length) {
     corpo.innerHTML = `
       <tr>
-        <td colspan="12" class="p-4 text-center text-gray-400">
-          Nenhuma solicitação ativa
+        <td colspan="6" class="p-4 text-center text-gray-400">
+          Nenhuma solicitação
         </td>
       </tr>`;
     return;
   }
 
-  const grupos = agruparPorIdentificador(dados);
+  const grupos = agruparPorId(dados);
 
   Object.keys(grupos).forEach(id => {
     const itens = grupos[id];
     const p = itens[0];
 
-    // 🔹 LINHA PRINCIPAL
     corpo.innerHTML += `
       <tr class="bg-slate-100 font-semibold cursor-pointer"
           onclick="toggleGrupo('${id}', this)">
         <td class="p-3 flex items-center gap-2">
           <span class="icon">➕</span> ${id}
         </td>
-        <td class="p-3">${itens.length} itens</td>
-        <td class="p-3">${formatarData(p.DATA_DA_SOLICITACAO)}</td>
-        <td class="p-3">${farol(p.STATUS)}</td>
-        <td class="p-3">${p.COMPRADOR || '-'}</td>
+        <td class="p-3">${itens.length}</td>
+        <td class="p-3">${formatarData(p["DATA DA SOLICITACAO"])}</td>
+        <td class="p-3">${badgeStatus(p.STATUS)}</td>
+        <td class="p-3">
+          <select class="border rounded px-2 py-1 text-xs"
+            onchange="atualizarComprador('${id}', this.value)">
+            <option>${p.COMPRADOR || 'Selecionar'}</option>
+            <option>Flávio</option>
+            <option>Patrícia</option>
+            <option>Leonardo</option>
+            <option>Pedro</option>
+          </select>
+        </td>
         <td class="p-3">
           <button onclick="event.stopPropagation(); concluir('${id}')"
             class="bg-green-600 text-white px-3 py-1 rounded text-xs">
@@ -92,35 +102,40 @@ function renderizarSolicitacoes(dados) {
       </tr>
     `;
 
-    // 🔹 ITENS EXPANSÍVEIS
-    itens.forEach(item => {
+    itens.forEach(i => {
       corpo.innerHTML += `
-        <tr class="grupo-${id} expand">
-          <td class="p-3 pl-10">• ${item.ITEM}</td>
-          <td class="p-3">${item.QUANTIDADE}</td>
-          <td class="p-3">${item.CENTRO_DE_CUSTO}</td>
-          <td class="p-3">${item.OBSERVACAO || '-'}</td>
-          <td class="p-3" colspan="2"></td>
+        <tr class="expand grupo-${id}">
+          <td class="p-3 pl-10">• ${i.ITEM}</td>
+          <td class="p-3">${i.QUANTIDADE}</td>
+          <td class="p-3">${i["CENTRO DE CUSTO"]}</td>
+          <td class="p-3" colspan="3">${i.OBSERVACAO || '-'}</td>
         </tr>
       `;
     });
   });
 }
 
-/* ---------- EXPANDIR COM ANIMAÇÃO ---------- */
+/* ---------- EXPANDIR ---------- */
 function toggleGrupo(id, row) {
   const linhas = document.querySelectorAll(`.grupo-${id}`);
   const icon = row.querySelector('.icon');
   const aberto = linhas[0].classList.contains('show');
 
-  linhas.forEach(l => {
-    l.classList.toggle('show');
-  });
-
+  linhas.forEach(l => l.classList.toggle('show'));
   icon.textContent = aberto ? '➕' : '➖';
 }
 
-/* ---------- CONCLUIR ---------- */
+/* ---------- AÇÕES ---------- */
+function atualizarComprador(id, comprador) {
+  fetch(URL_API, {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'ATUALIZAR_COMPRADOR',
+      id, comprador
+    })
+  });
+}
+
 function concluir(id) {
   if (!confirm(`Concluir solicitação ${id}?`)) return;
 
@@ -128,10 +143,9 @@ function concluir(id) {
     method: 'POST',
     body: JSON.stringify({
       action: 'CONCLUIR',
-      id: id
+      id
     })
   })
-  .then(r => r.json())
   .then(() => carregarSolicitacoes());
 }
 

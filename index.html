@@ -1,46 +1,65 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>CORE | Gestão de Solicitações</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestão de Solicitações</title>
 
-  <!-- Tailwind (ok usar em dev) -->
+  <!-- Tailwind CDN (ok para protótipo) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- FontAwesome -->
   <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    /* BOTÕES */
+    .btn-aba {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      transition: 0.2s;
+    }
+    .btn-aba:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* EXPANDIR */
+    .expand {
+      height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .expand.show {
+      height: auto;
+      opacity: 1;
+    }
+  </style>
 </head>
 
-<body class="bg-slate-100 flex h-screen overflow-hidden">
+<body class="bg-slate-100 flex h-screen">
 
 <!-- SIDEBAR -->
 <aside class="w-64 bg-slate-900 text-white flex flex-col">
-  <div class="p-4 border-b border-white/10 flex items-center gap-3">
-    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center font-bold">
-      C
-    </div>
-    <span class="text-lg font-bold">CORE</span>
-  </div>
+  <h1 class="text-xl font-bold p-4 border-b border-white/10">
+    CORE
+  </h1>
 
   <nav class="mt-4 flex-1 px-3 space-y-2">
-    <button type="button" onclick="mudarAba('solicitacoes')" id="btn-solicitacoes"
-      class="btn-aba bg-white/10">
-      <i class="fas fa-list w-5"></i>
-      Solicitações
+    <button id="btn-solicitacoes" onclick="mudarAba('solicitacoes')" class="btn-aba bg-white/10">
+      <i class="fas fa-list"></i> Solicitações
     </button>
 
-    <button type="button" onclick="mudarAba('avaliacao')" id="btn-avaliacao"
-      class="btn-aba">
-      <i class="fas fa-star w-5"></i>
-      Avaliação do Fornecedor
+    <button id="btn-avaliacao" onclick="mudarAba('avaliacao')" class="btn-aba">
+      <i class="fas fa-star"></i> Avaliação
     </button>
 
-    <button type="button" onclick="mudarAba('dashboard')" id="btn-dashboard"
-      class="btn-aba">
-      <i class="fas fa-chart-pie w-5"></i>
-      Dashboard
+    <button id="btn-dashboard" onclick="mudarAba('dashboard')" class="btn-aba">
+      <i class="fas fa-chart-bar"></i> Dashboard
     </button>
   </nav>
 </aside>
@@ -51,39 +70,15 @@
     SOLICITAÇÕES
   </h2>
 
-  <!-- FILTROS -->
-  <div class="flex gap-3 mb-4">
-    <select id="filtroComprador" title="Filtrar por comprador" class="border rounded px-3 py-2 text-sm">
-      <option value="">Todos compradores</option>
-      <option>Flávio</option>
-      <option>Patrícia</option>
-      <option>Leonardo</option>
-      <option>Pedro</option>
-    </select>
-
-    <select id="filtroStatus" title="Filtrar por status" class="border rounded px-3 py-2 text-sm">
-      <option value="">Todos status</option>
-      <option>Pendente</option>
-      <option>Em andamento</option>
-    </select>
-  </div>
-
-  <!-- TABELA -->
   <div class="bg-white rounded-lg shadow overflow-x-auto">
     <table class="w-full text-sm">
       <thead class="bg-slate-200">
         <tr>
-          <th class="p-3">ID</th>
+          <th class="p-3">Identificador</th>
+          <th class="p-3">Itens</th>
           <th class="p-3">Data</th>
-          <th class="p-3">Data Limite</th>
-          <th class="p-3">Centro de Custo</th>
-          <th class="p-3">Item</th>
-          <th class="p-3">Observação</th>
-          <th class="p-3">Qtd</th>
-          <th class="p-3">Solicitante</th>
           <th class="p-3">Status</th>
           <th class="p-3">Comprador</th>
-          <th class="p-3">Data Finalização</th>
           <th class="p-3">Ação</th>
         </tr>
       </thead>
@@ -92,23 +87,6 @@
   </div>
 </main>
 
-<!-- SCRIPT -->
 <script src="script.js"></script>
-
-<style>
-  .btn-aba {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    border-radius: 8px;
-    transition: 0.2s;
-  }
-  .btn-aba:hover {
-    background: rgba(255,255,255,0.1);
-  }
-</style>
-
 </body>
 </html>
