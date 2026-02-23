@@ -25,19 +25,19 @@
   </div>
 
   <nav class="mt-4 flex-1 px-3 space-y-2">
-    <button onclick="mudarAba('solicitacoes')" id="btn-solicitacoes"
+    <button type="button" onclick="mudarAba('solicitacoes')" id="btn-solicitacoes"
       class="btn-aba bg-white/10">
       <i class="fas fa-list w-5"></i>
       Solicitações
     </button>
 
-    <button onclick="mudarAba('avaliacao')" id="btn-avaliacao"
+    <button type="button" onclick="mudarAba('avaliacao')" id="btn-avaliacao"
       class="btn-aba">
       <i class="fas fa-star w-5"></i>
       Avaliação do Fornecedor
     </button>
 
-    <button onclick="mudarAba('dashboard')" id="btn-dashboard"
+    <button type="button" onclick="mudarAba('dashboard')" id="btn-dashboard"
       class="btn-aba">
       <i class="fas fa-chart-pie w-5"></i>
       Dashboard
@@ -53,7 +53,7 @@
 
   <!-- FILTROS -->
   <div class="flex gap-3 mb-4">
-    <select id="filtroComprador" class="border rounded px-3 py-2 text-sm">
+    <select id="filtroComprador" title="Filtrar por comprador" class="border rounded px-3 py-2 text-sm">
       <option value="">Todos compradores</option>
       <option>Flávio</option>
       <option>Patrícia</option>
@@ -61,7 +61,7 @@
       <option>Pedro</option>
     </select>
 
-    <select id="filtroStatus" class="border rounded px-3 py-2 text-sm">
+    <select id="filtroStatus" title="Filtrar por status" class="border rounded px-3 py-2 text-sm">
       <option value="">Todos status</option>
       <option>Pendente</option>
       <option>Em andamento</option>
@@ -75,7 +75,10 @@
         <tr>
           <th class="p-3">ID</th>
           <th class="p-3">Data</th>
+          <th class="p-3">Data Limite</th>
+          <th class="p-3">Centro de Custo</th>
           <th class="p-3">Item</th>
+          <th class="p-3">Observação</th>
           <th class="p-3">Qtd</th>
           <th class="p-3">Solicitante</th>
           <th class="p-3">Status</th>

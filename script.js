@@ -1,4 +1,4 @@
-// 🔴 COLE SUA URL DO APPS SCRIPT AQUI
+
 const URL_API = 'https://script.google.com/macros/s/AKfycbycJKciXRHOzWzkmXEj71A8pf5U-qGU-RiEKf2JiJTzAt8161G8eRVukHTeItT6bOFr/exec';
 
 let abaAtiva = 'solicitacoes';
