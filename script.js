@@ -1,106 +1,114 @@
-const URL_API = 'https://script.google.com/macros/s/AKfycbxzSC8wajsJXFWRotOE0VB3lI25Ng8pn6EmgVg3QfQDmZpegKPkM0Bj3e3yct4Y2Wbd/exec';
-let dadosOriginais = [];
+const URL_API = 'https://script.google.com/macros/s/AKfycbxYPCkapwMfMno0VUPz5lo-a6_Ud16YOFyil4JJSApz0fZ4g22Fw7bd9V64CZFpQ4zY/exec';
 
-/* ---------- INIT ---------- */
-fetch(`${URL_API}?aba=DB_SOLICITACOES`)
-  .then(r => r.json())
-  .then(dados => {
-    dadosOriginais = dados;
-    renderizarTabela(dados);
-  });
+let dadosCache = [];
 
-/* ---------- UTIL ---------- */
+/* ================= UTIL ================= */
+
 function formatarData(data) {
   if (!data) return '-';
   const d = new Date(data);
   return d.toLocaleDateString('pt-BR');
 }
 
-function agruparPorIdentificador(dados) {
-  return dados.reduce((acc, item) => {
-    const id = item["Identificador"];
-    if (!acc[id]) acc[id] = [];
-    acc[id].push(item);
-    return acc;
-  }, {});
+function badgeStatus(status) {
+  const map = {
+    'Em andamento': 'bg-yellow-100 text-yellow-800',
+    'Em atraso': 'bg-red-100 text-red-700',
+    'Concluído': 'bg-green-100 text-green-700',
+    'Recebido com atraso': 'bg-orange-100 text-orange-700'
+  };
+  return `<span class="px-2 py-1 rounded text-xs ${map[status] || 'bg-gray-100'}">${status}</span>`;
 }
 
-/* ---------- RENDER ---------- */
-function renderizarTabela(dados) {
+/* ================= CARREGAR ================= */
+
+function carregarSolicitacoes() {
+  fetch(`${URL_API}?aba=DB_SOLICITACOES`)
+    .then(r => r.json())
+    .then(dados => {
+      dadosCache = dados;
+      renderizarAgrupado(dados);
+    });
+}
+
+/* ================= AGRUPAMENTO ================= */
+
+function renderizarAgrupado(dados) {
   const corpo = document.getElementById('corpoTabela');
   corpo.innerHTML = '';
 
-  const grupos = agruparPorIdentificador(dados);
+  const grupos = {};
+  dados.forEach(d => {
+    if (!grupos[d.IDENTIFICADOR]) grupos[d.IDENTIFICADOR] = [];
+    grupos[d.IDENTIFICADOR].push(d);
+  });
 
   Object.keys(grupos).forEach(id => {
     const itens = grupos[id];
     const base = itens[0];
 
-    // LINHA PAI
     corpo.innerHTML += `
-      <tr class="bg-slate-100 cursor-pointer" onclick="toggleGrupo('${id}', this)">
-        <td class="p-2 font-bold">
-          <span class="toggle-icon">➕</span> ${id}
-        </td>
+      <tr class="bg-slate-50">
+        <td class="p-3 cursor-pointer" onclick="toggle('${id}')">➕ ${id}</td>
         <td>${itens.length} itens</td>
-        <td>${formatarData(base["Data da Solicitação"])}</td>
-        <td>${base["Status"]}</td>
+        <td>${formatarData(base['DATA DA SOLICITAÇÃO'])}</td>
+        <td>${badgeStatus(base.STATUS_CALCULADO)}</td>
         <td>
-          <select onchange="definirComprador('${id}', this.value)">
-            <option>${base["Comprador"] || 'Selecionar'}</option>
-            <option>João</option>
-            <option>Maria</option>
-            <option>Carlos</option>
+          <select id="comprador-${id}" class="border rounded px-2 py-1">
+            <option value="">Selecionar</option>
+            <option>Flávio</option>
+            <option>Patrícia</option>
+            <option>Leonardo</option>
+            <option>Pedro</option>
           </select>
         </td>
         <td>
-          <button class="bg-green-600 text-white px-2 py-1 rounded text-xs"
-            onclick="event.stopPropagation(); concluir('${id}')">
+          <button onclick="concluir('${id}')" class="bg-green-600 text-white px-3 py-1 rounded">
             Concluir
           </button>
         </td>
       </tr>
     `;
 
-    // LINHAS FILHAS (ITENS)
-    itens.forEach(item => {
+    itens.forEach(i => {
       corpo.innerHTML += `
-        <tr class="hidden grupo-${id} bg-white border-t">
+        <tr class="hidden grupo-${id}">
           <td></td>
-          <td>${item["Item"]}</td>
-          <td>${formatarData(item["Data Limite"])}</td>
-          <td>${item["Centro de Custo"]}</td>
-          <td>${item["Observação"] || '-'}</td>
-          <td>${item["Quantidade"]}</td>
+          <td colspan="2">${i.ITEM}</td>
+          <td>${i.QUANTIDADE}</td>
+          <td colspan="2">${i.OBSERVAÇÃO || '-'}</td>
         </tr>
       `;
     });
   });
 }
 
-/* ---------- EXPAND ---------- */
-function toggleGrupo(id, linha) {
-  const filhos = document.querySelectorAll(`.grupo-${id}`);
-  const icon = linha.querySelector('.toggle-icon');
-  const aberto = icon.textContent === '➖';
+/* ================= AÇÕES ================= */
 
-  filhos.forEach(f => f.classList.toggle('hidden'));
-  icon.textContent = aberto ? '➕' : '➖';
+function toggle(id) {
+  document.querySelectorAll(`.grupo-${id}`)
+    .forEach(l => l.classList.toggle('hidden'));
 }
 
-/* ---------- AÇÕES ---------- */
 function concluir(id) {
-  if (!confirm('Concluir solicitação?')) return;
+  const comprador = document.getElementById(`comprador-${id}`).value;
+  if (!comprador) {
+    alert('Selecione um comprador');
+    return;
+  }
 
   fetch(URL_API, {
     method: 'POST',
-    body: JSON.stringify({ action: 'CONCLUIR', id })
-  }).then(() => location.reload());
+    body: JSON.stringify({
+      action: 'CONCLUIR',
+      id,
+      comprador
+    })
+  })
+    .then(r => r.json())
+    .then(() => carregarSolicitacoes());
 }
 
-function definirComprador(id, comprador) {
-  fetch(URL_API, {
-    method: 'POST',
-    body: JSON.stringify({ action: 'COMPRADOR', id, comprador })
-  });
-}
+/* ================= INIT ================= */
+
+document.addEventListener('DOMContentLoaded', carregarSolicitacoes);
